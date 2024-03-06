@@ -45,65 +45,43 @@ Papa.parse("snapcraft-launchpad.csv", {
 
 function snapcraftDeps(data) {
   console.log(data)
-    // Get a reference to the div
-    var myDiv = document.getElementById("snapcraft-deps");
-
-    var libraries = data.map(function (d) {
-      return d.library;
-    });
-    var versions = data.map(function (d) {
-      return d.versions;
-    });
-
-    var parsed_data = []
-    parsed_data.push(["library", "version"])
-    for (var i = 0; i < data.length; i++) {
-      var row = [];
-      // Iterate over the keys (columns) of the object
-      for (var key in data[i]) {
-          if (data[i].hasOwnProperty(key)) {
-              row.push(data[i][key]);
-          }
-      }
-      // Push the constructed row to parsedData
-      parsed_data.push(row);
-  }
-
-
+    var div = document.getElementById("app-deps");
     var table = document.createElement('table');
+    var header_row = true;
 
     // Iterate through the parsed data
-    parsed_data.forEach(function(rowData) {
-        // Create a row for each row of data
-        var row = document.createElement('tr');
+    data.forEach(function(rowData) {
+      // Create a row for each row of data
+      if (rowData[0] === null) {
+        return; // Skips the current iteration
+      }
+      var row = document.createElement('tr');
+      console.log(rowData)
 
-        // Iterate through the row's data and create cells
-        rowData.forEach(function(cellData) {
-            var cell = document.createElement('td');
-            cell.appendChild(document.createTextNode(cellData));
-            row.appendChild(cell);
-        });
+      // Iterate through the row's data and create cells
+      rowData.forEach(function(cellData) {
+        if (header_row) {
+          var cell = document.createElement('th');
+        } else {
+          var cell = document.createElement('td');
+        }
+        cell.appendChild(document.createTextNode(cellData));
+        row.appendChild(cell);
 
-        // Add the row to the table
-        table.appendChild(row);
+      });
+      header_row = false;
+
+      // Add the row to the table
+      table.appendChild(row);
     });
 
-    // Add the table to the container div
-    myDiv.appendChild(table);
-
-    // Check if the div exists
-    //if (myDiv) {
-    //    // Populate the div with content
-    //    myDiv.innerHTML = libraries;
-    //} else {
-    //    console.error("Element with id 'snapcraft-deps' not found.");
-    //}
+    div.appendChild(table);
 }
 
-Papa.parse("snapcraft-deps.csv", {
+Papa.parse("app-deps.csv", {
     download: true,
     dynamicTyping: true,
-    header: true,
+    header: false,
     complete: function (data) {
         snapcraftDeps(data.data)
     }

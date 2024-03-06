@@ -1,5 +1,6 @@
 import argparse
 import csv
+from dataclasses import dataclass
 from pathlib import Path
 import requests
 from dparse import parse, filetypes
@@ -17,13 +18,47 @@ CRAFT_LIBRARIES = {
 }
 
 
-def get_reqs(parsed_args: argparse.Namespace) -> None:
-    """Fetch craft library requirements for an application."""
-    user: str = parsed_args.user
-    project: str = parsed_args.project
-    branch: str = parsed_args.branch
+@dataclass(frozen=True)
+class CraftApplication():
+    """TODO."""
 
-    url = f"https://raw.githubusercontent.com/{user}/{project}/{branch}/requirements.txt"
+    name: str
+    branch: str = "main"
+    owner: str = "canonical"
+
+
+CRAFT_APPLICATIONS = {
+    CraftApplication("charmcraft"),
+    CraftApplication("rockcraft"),
+    CraftApplication("snapcraft"),
+}
+
+
+def get_reqs(parsed_args: argparse.Namespace) -> None:
+    """Fetch craft library requirements for all applications."""
+    app_reqs: dict = {}
+    for app in CRAFT_APPLICATIONS:
+        app_reqs[app] = _get_reqs_for_project(app)
+
+    # write to data file
+    with Path("data/app-deps.csv").open("w", encoding="utf-8") as file:
+        writer = csv.writer(file, lineterminator="\n")
+        # TODO: programatically generate header
+        writer.writerow(["library", "snapcraft", "rockcraft", "charmcraft"])
+        for library in CRAFT_LIBRARIES:
+            writer.writerow(
+                [
+                    library,
+                    # TODO: programatically generate data
+                    app_reqs[CraftApplication("snapcraft")][library],
+                    app_reqs[CraftApplication("rockcraft")][library],
+                    app_reqs[CraftApplication("charmcraft")][library]]
+            )
+
+
+def _get_reqs_for_project(app: CraftApplication) -> dict:
+    """Fetch craft library requirements for an application."""
+    url = f"https://raw.githubusercontent.com/{app.owner}/{app.name}/{app.branch}/requirements.txt"
     reqs_request = requests.get(url)
 
     if reqs_request.status_code != 200:
@@ -34,19 +69,7 @@ def get_reqs(parsed_args: argparse.Namespace) -> None:
 
     # normalize the version and covert to string
     for dep, spec in deps.items():
-        if not spec:
-            deps[dep] = "unknown version"
-        else:
-            deps[dep] = str(spec).lstrip("=")
+        deps[dep] = str(spec).lstrip("=") if spec else "unknown"
 
-    # set version to "not found" for any missing deps
-    for lib in CRAFT_LIBRARIES:
-        if lib not in deps:
-            deps[lib] = "not found"
-
-    # write to data file
-    with Path(f"data/{project}-deps.csv").open("w", encoding="utf-8") as file:
-        writer = csv.writer(file, lineterminator="\n")
-        writer.writerow(["library", "version"])
-        for lib in CRAFT_LIBRARIES:
-            writer.writerow([lib, deps[lib]])
+    # only return craft library deps
+    return {lib: deps.get(lib, "n/a") for lib in CRAFT_LIBRARIES}

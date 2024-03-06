@@ -20,24 +20,6 @@ def main() -> None:
         help="Fetch craft library requirements for an application",
     )
     fetch_reqs.set_defaults(func=get_reqs)
-    fetch_reqs.add_argument(
-        "user",
-        help="github user project is under",
-        metavar="user",
-        type=str,
-    )
-    fetch_reqs.add_argument(
-        "project",
-        help="name of project on github",
-        metavar="project",
-        type=str,
-    )
-    fetch_reqs.add_argument(
-        "branch",
-        help="branch to fetch requirements from",
-        metavar="branch",
-        type=str,
-    )
 
     fetch_launchpad = subparsers.add_parser(
         "launchpad",
