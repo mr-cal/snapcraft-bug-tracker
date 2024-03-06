@@ -35,7 +35,7 @@ def get_median_date(dates: List[datetime]) -> Union[datetime, str]:
 
 
 def get_github_data(parsed_args: argparse.Namespace) -> None:
-    """TODO."""
+    """Get github data for a project."""
     user: str = parsed_args.user
     project: str = parsed_args.project
     github_token = os.getenv("GITHUB_TOKEN")

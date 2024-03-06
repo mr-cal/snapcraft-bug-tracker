@@ -1,18 +1,43 @@
-"""CLI handler for starcraft-stats."""
+"""cli handler for starcraft-stats."""
 
 import argparse
 
 from .github import get_github_data
 from .launchpad import get_launchpad_data
+from .fetch_reqs import get_reqs
 
 
 def main() -> None:
-    """TODO."""
+    """Entrypoint and cli handler."""
     parser = argparse.ArgumentParser(
         description="Fetch starcraft data from github and launchpad.",
     )
 
     subparsers = parser.add_subparsers(help="sub-command help")
+
+    fetch_reqs = subparsers.add_parser(
+        "fetch-reqs",
+        help="Fetch craft library requirements for an application",
+    )
+    fetch_reqs.set_defaults(func=get_reqs)
+    fetch_reqs.add_argument(
+        "user",
+        help="github user project is under",
+        metavar="user",
+        type=str,
+    )
+    fetch_reqs.add_argument(
+        "project",
+        help="name of project on github",
+        metavar="project",
+        type=str,
+    )
+    fetch_reqs.add_argument(
+        "branch",
+        help="branch to fetch requirements from",
+        metavar="branch",
+        type=str,
+    )
 
     fetch_launchpad = subparsers.add_parser(
         "launchpad",
