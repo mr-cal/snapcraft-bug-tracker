@@ -1,16 +1,20 @@
 import argparse
 import csv
-import os
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import List, Union
 import requests
-import re
-import string
 from dparse import parse, filetypes
 
+"""Fetch craft library requirements for an application."""
 
-PACKAGE_LINE_REGEX = re.compile(r"^([A-Za-z0-9_.-]+)( *[~<>=!]==?)?(.*)")
+CRAFT_LIBRARIES = {
+    "craft-application",
+    "craft-archives",
+    "craft-cli",
+    "craft-grammar",
+    "craft-parts",
+    "craft-providers",
+    "craft-store",
+}
 
 
 def get_reqs(parsed_args: argparse.Namespace) -> None:
@@ -26,7 +30,23 @@ def get_reqs(parsed_args: argparse.Namespace) -> None:
         raise RuntimeError(f"Could not fetch requirements.txt from {url}")
 
     df = parse(reqs_request.text, file_type=filetypes.requirements_txt)
+    deps = {dep.name: dep.specs for dep in df.dependencies}
 
-    print(df.dependencies)
+    # normalize the version and covert to string
+    for dep, spec in deps.items():
+        if not spec:
+            deps[dep] = "unknown version"
+        else:
+            deps[dep] = str(spec).lstrip("=")
 
-    #Jkcraft_providers = df.
+    # set version to "not found" for any missing deps
+    for lib in CRAFT_LIBRARIES:
+        if lib not in deps:
+            deps[lib] = "not found"
+
+    # write to data file
+    with Path(f"data/{project}-deps.csv").open("w", encoding="utf-8") as file:
+        writer = csv.writer(file, lineterminator="\n")
+        writer.writerow(["library", "version"])
+        for lib in CRAFT_LIBRARIES:
+            writer.writerow([lib, deps[lib]])
