@@ -8,8 +8,6 @@ jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the
-      # added or changed files to the repository.
       contents: write
     steps:
       - name: checkout
@@ -26,10 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          starcraft-stats github canonical charmcraft
-          starcraft-stats github canonical craft-archives
-          starcraft-stats github canonical craft-application
+          starcraft-stats fetch-reqs
       - name: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "ci: update charmcraft, craft-archives, craft-application data"
+          commit_message: "ci: fetch craft applications & libraries"

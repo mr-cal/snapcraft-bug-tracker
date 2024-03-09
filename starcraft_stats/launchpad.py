@@ -5,7 +5,7 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from launchpadlib.launchpad import Launchpad  #  type: ignore[import-untyped]
+from launchpadlib.launchpad import Launchpad  # type: ignore[import-untyped]
 
 # This file relies heavily on dynamic features from launchpadlib that cause pyright
 # to complain a lot. As such, we're disabling several pyright checkers for this file

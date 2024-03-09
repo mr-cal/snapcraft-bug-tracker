@@ -1,53 +1,12 @@
-function makeChart(data) {
-  console.log(data)
-
-  var dates = data.map(function (d) {
-    return d.Date;
-  });
-  var confirmedData = data.map(function (d) {
-    return +d.Confirmed;
-  });
-
-  var chart = new Chart('chart', {
-    type: "line",
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      legend: {
-        display: false
-      },
-      scales: {
-        y: {
-          min: 0
-        }
-      },
-    },
-    data: {
-      labels: dates,
-      datasets: [
-        {
-          data: confirmedData
-        }
-      ]
-    }
-  });
-}
-
-Papa.parse("snapcraft-launchpad.csv", {
-  download: true,
-  dynamicTyping: true,
-  header: true,
-  complete: function (data) {
-    makeChart(data.data)
-  }
-});
-
-
 function snapcraftDeps(data) {
-  console.log(data)
+    console.log(data)
     var div = document.getElementById("app-deps");
     var table = document.createElement('table');
-    var header_row = true;
+    var header_group = document.createElement("thead");
+    var body_group = document.createElement("tbody");
+
+    var is_header = true;
+    var row_name = "th";
 
     // Iterate through the parsed data
     data.forEach(function(rowData) {
@@ -56,29 +15,32 @@ function snapcraftDeps(data) {
         return; // Skips the current iteration
       }
       var row = document.createElement('tr');
-      console.log(rowData)
 
       // Iterate through the row's data and create cells
       rowData.forEach(function(cellData) {
-        if (header_row) {
-          var cell = document.createElement('th');
-        } else {
-          var cell = document.createElement('td');
-        }
-        cell.appendChild(document.createTextNode(cellData));
+        var cell = document.createElement(row_name);
+        cell.setAttribute("class", "u-align--right")
+        var textNode = document.createTextNode(cellData);
+        cell.appendChild(textNode);
         row.appendChild(cell);
-
       });
-      header_row = false;
 
       // Add the row to the table
-      table.appendChild(row);
-    });
+      if (is_header) {
+        header_group.appendChild(row);
+        is_header = false;
+        row_name = "td";
+      } else {
+        body_group.appendChild(row);
+      }
 
+    });
+    table.appendChild(header_group);
+    table.appendChild(body_group);
     div.appendChild(table);
 }
 
-Papa.parse("app-deps.csv", {
+Papa.parse("data/app-deps.csv", {
     download: true,
     dynamicTyping: true,
     header: false,

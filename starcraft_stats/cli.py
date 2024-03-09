@@ -2,9 +2,9 @@
 
 import argparse
 
+from .fetch_reqs import get_reqs
 from .github import get_github_data
 from .launchpad import get_launchpad_data
-from .fetch_reqs import get_reqs
 
 
 def main() -> None:
